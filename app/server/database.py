@@ -2,7 +2,7 @@ import motor.motor_asyncio
 from bson.objectid import ObjectId
  
 # Provide the mongodb atlas url to connect python to mongodb using pymongo
-CONNECTION_STRING = "mongodb+srv://njsingh3948:nj39483948@cluster0.ak2xhcq.mongodb.net/?retryWrites=true&w=majority"
+
 
 # Create a connection using MongoClient. You can import MongoClient or use pymongo.MongoClient
 client = motor.motor_asyncio.AsyncIOMotorClient(CONNECTION_STRING)

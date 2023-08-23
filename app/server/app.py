@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.server.routes.channel import router as ChannelRouter
+from server.routes.channel import router as ChannelRouter
 
 app = FastAPI()
 

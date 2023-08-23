@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Body
 from fastapi.encoders import jsonable_encoder
 
-from app.server.database import (
+from server.database import (
     add_channel,
     delete_channel,
     retrieve_channel,
     retrieve_channels,
     update_channel,
 )
-from app.server.models.channel import (
+from server.models.channel import (
     ErrorResponseModel,
     ResponseModel,
     ChannelSchema,

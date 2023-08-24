@@ -32,14 +32,3 @@ class UpdateChannelModel(BaseModel):
                 "members": ['1', '2', '3']
             }
         }
-
-def ResponseModel(data, message):
-    return {
-        "data": [data],
-        "code": 200,
-        "message": message,
-    }
-
-
-def ErrorResponseModel(error, code, message):
-    return {"error": error, "code": code, "message": message}

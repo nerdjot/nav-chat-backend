@@ -9,10 +9,13 @@ from server.database import (
     update_channel,
 )
 from server.models.channel import (
-    ErrorResponseModel,
-    ResponseModel,
     ChannelSchema,
     UpdateChannelModel,
+)
+
+from server.models.model import (
+    ErrorResponseModel,
+    ResponseModel,
 )
 
 router = APIRouter()
@@ -21,7 +24,7 @@ router = APIRouter()
 async def add_channel_data(channel: ChannelSchema = Body(...)):
     channel = jsonable_encoder(channel)
     new_channel = await add_channel(channel)
-    return ResponseModel(new_channel), "Channel added successfully."
+    return ResponseModel(new_channel, "Channel added successfully.")
 
 @router.get("/", response_description="Channels retrieved")
 async def get_channels():

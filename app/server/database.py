@@ -16,18 +16,16 @@ users_collection = database.get_collection("users")
 
 #Fields:
 
+channel_fields = ["name", "description", "creator_id", "members"]
 user_fields = ["name", "email", "picture_url", "channels"]
 
 # helpers
 
 def channel_helper(channel) -> dict:
-    return {
-        "id": str(channel["_id"]),
-        "name": channel["name"],
-        "description": channel["description"],
-        "creator_id": channel["creator_id"],
-        "members": channel["members"],
-    }
+    result = {"id": str(channel["_id"])}
+    for field in channel_fields:
+        result[field] = channel[field]
+    return result
 
 def user_helper(user) -> dict:
     result = {"id": str(user["_id"])}
@@ -45,6 +43,17 @@ async def retrieve_channels():
         channels.append(channel_helper(channel))
     return channels
 
+async def retrieve_channels_of_user(user_id: str):
+    channels = []
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        print(user["channels"])
+        for channelId in user["channels"]:
+            channel = await retrieve_channel(channelId)
+            print(channelId, channel)
+            channels.append(channel)
+    return channels
+
 # Add a new channel into to the database
 async def add_channel(channel_data: dict) -> dict:
     channel = await channels_collection.insert_one(channel_data)
@@ -59,12 +68,16 @@ async def retrieve_channel(id: str) -> dict:
         return channel_helper(channel)
     
 # Update a channel with a matching ID
-async def update_channel(id: str, data: dict):
+async def update_channel(id: str, input_data: dict):
     # Return false if an empty request body is sent.
-    if len(data) < 1:
+    if len(input_data) < 1:
         return False
     channel = await channels_collection.find_one({"_id": ObjectId(id)})
     if channel:
+        data = channel_helper(channel)
+        for input_field in input_data:
+            if input_field in channel_fields:
+                data[input_field] = input_data[input_field]
         updated_channel = await channels_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": data}
         )
@@ -86,7 +99,7 @@ async def delete_channel(id: str):
 #Retrieve all users
 async def retrieve_users():
     users = []
-    for user in users_collection.find():
+    async for user in users_collection.find():
         users.append(user_helper(user))
     return users
 
@@ -98,7 +111,7 @@ async def add_user(user_data: dict) -> dict:
 
 #Retrieve user
 async def retrieve_user(id: str) -> dict:
-    user = users_collection.find_one({"_id": ObjectId(id)})
+    user = await users_collection.find_one({"_id": ObjectId(id)})
     return user_helper(user)
 
 #Update user

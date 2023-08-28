@@ -19,10 +19,10 @@ class ChannelSchema(BaseModel):
         }
 
 class UpdateChannelModel(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    creator_id: Optional[str]
-    members: Optional[List[str]]
+    name: Optional[str] = Field(None)
+    description: Optional[str] = Field(None)
+    creator_id: Optional[str] = Field(None)
+    members: Optional[List[str]] = Field(None)
     class Config:
         schema_extra = {
             "example": {

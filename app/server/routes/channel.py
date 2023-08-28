@@ -7,6 +7,8 @@ from server.database import (
     retrieve_channel,
     retrieve_channels,
     update_channel,
+    retrieve_user,
+    retrieve_channels_of_user
 )
 from server.models.channel import (
     ChannelSchema,

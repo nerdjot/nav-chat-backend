@@ -20,7 +20,7 @@ class UpdateUserModel(BaseModel):
     name: Optional[str] = Field(None, description="users name")
     email: Optional[EmailStr] = Field(None)
     picture_url: Optional[str] = Field(None)
-    channels: Optional[str] = Field(None)
+    channels: Optional[List[str]] = Field(None)
     class Config:
         schema_extra = {
             "example": {

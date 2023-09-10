@@ -44,7 +44,7 @@ async def get_user_data(id):
     user = await retrieve_user(id)
     if user:
         return ResponseModel(user, "User data retrieved successfully")
-    return ResponseModel("An error occurred.", 404, "User does not exist.")
+    return ResponseModel(404, "User does not exist.")
 
 @router.post("/", response_description="User added to the database")
 async def add_user_data(user: UserSchema = Body(...)):

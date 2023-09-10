@@ -12,12 +12,14 @@ database = client['nav_chat_data']
 
 channels_collection = database.get_collection("channels")
 users_collection = database.get_collection("users")
+messages_collection = database.get_collection("messages")
 
 
 #Fields:
 
-channel_fields = ["name", "description", "creator_id", "members"]
+channel_fields = ["name", "description", "creator_id", "members", "messages"]
 user_fields = ["name", "email", "picture_url", "channels"]
+message_fields = ["content", "sender", "timestamp", "read_by"]
 
 # helpers
 
@@ -33,6 +35,13 @@ def user_helper(user) -> dict:
         result[field] = user[field]
     return result
 
+def message_helper(message) -> dict:
+    result = {}
+    for field in message_fields:
+        result[field] = message[field]
+    return result
+
+
 
 ##CHANNEL FUNCTIONS
 
@@ -46,16 +55,16 @@ async def retrieve_channels():
 async def retrieve_channels_of_user(user_id: str):
     channels = []
     user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    print(user)
     if user:
-        print(user["channels"])
         for channelId in user["channels"]:
             channel = await retrieve_channel(channelId)
-            print(channelId, channel)
             channels.append(channel)
     return channels
 
 # Add a new channel into to the database
 async def add_channel(channel_data: dict) -> dict:
+    channel_data['messages'] = []
     channel = await channels_collection.insert_one(channel_data)
     new_channel = await channels_collection.find_one({"_id": channel.inserted_id})
     return channel_helper(new_channel)
@@ -105,6 +114,7 @@ async def retrieve_users():
 
 #Add NEW user
 async def add_user(user_data: dict) -> dict:
+    user_data["channels"] = []
     user = await users_collection.insert_one(user_data)
     new_user = await users_collection.find_one({"_id": user.inserted_id})
     return user_helper(new_user)
@@ -112,7 +122,8 @@ async def add_user(user_data: dict) -> dict:
 #Retrieve user
 async def retrieve_user(id: str) -> dict:
     user = await users_collection.find_one({"_id": ObjectId(id)})
-    return user_helper(user)
+    if user:
+        return user_helper(user)
 
 #Update user
 async def update_user(id: str, input_data: dict):
@@ -121,13 +132,14 @@ async def update_user(id: str, input_data: dict):
     user = await users_collection.find_one({"_id": ObjectId(id)})
     if user:
         data = user_helper(user)
+        del data["id"]
         for input_field in input_data:
             if input_field in user_fields:
                 data[input_field] = input_data[input_field]
         updated_user = await users_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": data}
         )
-        if update_user:
+        if updated_user:
             return True
     return False
 
@@ -137,3 +149,25 @@ async def delete_user(id: str):
         await users_collection.delete_one({"_id": ObjectId(id)})
         return True
     return False
+
+async def retrieve_messages(channel_id:str):
+    messages =[]
+    channel = await channels_collection.find_one({"_id": ObjectId(channel_id)})
+    if channel:
+        messages_obj = channel["messages"]
+        for message_obj in messages_obj:
+            messages.append(message_helper(messages_obj))
+    return messages
+
+
+async def add_message(channel_id: str, message_data: dict):
+    message_data['message_id'] = str(ObjectId())
+    result = channels_collection.update_one(
+        { 'channel_id': channel_id },
+        { '$push': { 'messages': message_data } }
+    )
+    
+    if result.matched_count == 0:
+        print(f"No document found with channel_id: {channel_id}")
+    else:
+        print(f"Successfully added message to channel with channel_id: {channel_id}")

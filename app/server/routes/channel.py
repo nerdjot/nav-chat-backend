@@ -7,8 +7,6 @@ from server.database import (
     retrieve_channel,
     retrieve_channels,
     update_channel,
-    retrieve_user,
-    retrieve_channels_of_user
 )
 from server.models.channel import (
     ChannelSchema,
@@ -33,7 +31,7 @@ async def get_channels():
     channels = await retrieve_channels()
     if channels:
         return ResponseModel(channels, "Channels data retrieved successfully")
-    return ResponseModel(channels, "Empty list returned")
+    return ResponseModel(channels, "Empty list returned") 
 
 
 @router.get("/{id}", response_description="Channel data retrieved")

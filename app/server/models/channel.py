@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -36,6 +36,9 @@ class UpdateChannelModel(BaseModel):
                 #"messages": []
             }
         }
+
+class MembersSchema(BaseModel):
+    members: List[str] = Field(...)
 
 class SendMessageModel(BaseModel):
     message: str = Field(...)

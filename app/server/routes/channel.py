@@ -7,10 +7,12 @@ from server.database import (
     retrieve_channel,
     retrieve_channels,
     update_channel,
+    add_members
 )
 from server.models.channel import (
     ChannelSchema,
     UpdateChannelModel,
+    MembersSchema
 )
 
 from server.models.model import (
@@ -65,4 +67,19 @@ async def delete_channel_data(id: str):
         )
     return ErrorResponseModel(
         "An error occurred", 404, "Channel with id {0} doesn't exist".format(id)
+    )
+
+@router.post("/{id}/members", response_description="Members added to channel")
+async def add_members_to_channel(id:str, members: MembersSchema = Body(...)):
+    members = jsonable_encoder(members)
+    updated_channel = await add_members(id, members)
+    if updated_channel:
+        return ResponseModel(
+            "Channel with ID: {} name update is successful".format(id),
+            "Channel updated successfully",
+        )
+    return ErrorResponseModel(
+        "An error occurred",
+        404,
+        "There was an error updating the channel data.",
     )

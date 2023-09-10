@@ -12,14 +12,12 @@ database = client['nav_chat_data']
 
 channels_collection = database.get_collection("channels")
 users_collection = database.get_collection("users")
-messages_collection = database.get_collection("messages")
 
 
 #Fields:
 
 channel_fields = ["name", "description", "creator_id", "members", "messages"]
 user_fields = ["name", "email", "picture_url", "channels"]
-message_fields = ["content", "sender", "timestamp", "read_by"]
 
 # helpers
 
@@ -35,13 +33,6 @@ def user_helper(user) -> dict:
         result[field] = user[field]
     return result
 
-def message_helper(message) -> dict:
-    result = {}
-    for field in message_fields:
-        result[field] = message[field]
-    return result
-
-
 
 ##CHANNEL FUNCTIONS
 
@@ -55,7 +46,6 @@ async def retrieve_channels():
 async def retrieve_channels_of_user(user_id: str):
     channels = []
     user = await users_collection.find_one({"_id": ObjectId(user_id)})
-    print(user)
     if user:
         for channelId in user["channels"]:
             channel = await retrieve_channel(channelId)
@@ -84,6 +74,7 @@ async def update_channel(id: str, input_data: dict):
     channel = await channels_collection.find_one({"_id": ObjectId(id)})
     if channel:
         data = channel_helper(channel)
+        del data["id"]
         for input_field in input_data:
             if input_field in channel_fields:
                 data[input_field] = input_data[input_field]
@@ -99,6 +90,32 @@ async def delete_channel(id: str):
     channel = await channels_collection.find_one({"_id": ObjectId(id)})
     if channel:
         await channels_collection.delete_one({"_id": ObjectId(id)})
+        return True
+    return False
+
+async def add_members(channel_id: str, members):
+    #add members array to channel collection
+    #add channel_id to channels array of users in user collection.
+
+    #find channel first:
+    members = members["members"]
+    channel = await channels_collection.find_one({"_id": ObjectId(channel_id)})
+    true_members = []
+    new_members = []
+    if channel:
+        for member_id in members:
+            #find if user exist, only add users that exist
+            user = await users_collection.find_one({"_id": ObjectId(member_id)})
+            if user:
+                true_members.append(member_id)
+                #check if channel is not already added.
+                if channel_id not in user["channels"]:
+                    new_channels = list(set(user["channels"] + [channel_id]))
+                    await update_user(member_id, {"channels": new_channels})
+        print("members", channel["members"])
+        new_members = list(set(list(channel["members"] + true_members)))
+        print("new_members", new_members)
+        await update_channel(channel_id, {"members":new_members})
         return True
     return False
 

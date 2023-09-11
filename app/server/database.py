@@ -54,8 +54,23 @@ async def retrieve_channels_of_user(user_id: str):
 
 # Add a new channel into to the database
 async def add_channel(channel_data: dict) -> dict:
+    #storing out the members array
+    members = {"members":channel_data["members"]}
+
+    #adding empty fields needed for channel creation.
     channel_data['messages'] = []
+    channel_data['members'] = []
+    creator_id = channel_data["creator_id"]
+    creator = await retrieve_user(creator_id)
+    print("creator", creator)
+    if not creator:
+        return
     channel = await channels_collection.insert_one(channel_data)
+    new_channel = await channels_collection.find_one({"_id": channel.inserted_id})
+    if new_channel:
+        await add_members(channel.inserted_id, members)
+    else:
+        return
     new_channel = await channels_collection.find_one({"_id": channel.inserted_id})
     return channel_helper(new_channel)
 

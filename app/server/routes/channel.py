@@ -26,7 +26,9 @@ router = APIRouter()
 async def add_channel_data(channel: ChannelSchema = Body(...)):
     channel = jsonable_encoder(channel)
     new_channel = await add_channel(channel)
-    return ResponseModel(new_channel, "Channel added successfully.")
+    if new_channel:
+        return ResponseModel(new_channel, "Channel added successfully.")
+    return ResponseModel(404, "Could not create channel")#I want to add a proper error message here, from DB funciton it should populate.
 
 @router.get("/", response_description="Channels retrieved")
 async def get_channels():
